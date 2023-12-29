@@ -4,7 +4,7 @@ LIBS = -lglfw -lGLU -lGL -lGLEW `pkg-config --libs freetype2`
 INCLUDE = -I./include
 
 # Define your source files and target executable
-SRC = $(wildcard src/*.cpp)
+SRC = $(wildcard src/*.cpp) main.cpp
 OBJ = $(SRC:.cpp=.o)
 EXEC = run_bunny_run
 
@@ -17,6 +17,6 @@ $(EXEC): $(OBJ)
 	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 
 clean:
-	rm -f src/*.o $(EXEC)
+	rm -f src/*.o *.o $(EXEC)
 
 .PHONY: all clean

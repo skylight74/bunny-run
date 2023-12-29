@@ -75,6 +75,10 @@ bool Model::parseObj(const std::string &filename) {
 
 // Set up VBO, EBO, etc.
 void Model::setupBuffers() {
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  assert(glGetError() == GL_NONE);
+
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
@@ -111,13 +115,12 @@ void Model::setupBuffers() {
 
   glBindVertexArray(0);
 }
-void Model::draw() {
+void Model::draw(ShaderProgram &shaderProgram) {
   // Ensure the shader program is bound before drawing
   // This should be the ID of your active shader program
 
   // Bind the Vertex Array Object
   glBindVertexArray(vao);
-
   // Draw the model
   // The number of indices is the number of faces times 3 (since each face is a
   // triangle)
@@ -127,9 +130,8 @@ void Model::draw() {
   glBindVertexArray(0);
 
   // Unbind the shader program
-  glUseProgram(0);
+  shaderProgram.useProgram();
 
-  // Optional: Check for any OpenGL errors
   GLenum err;
   while ((err = glGetError()) != GL_NO_ERROR) {
     std::cerr << "OpenGL error during drawing: " << gluErrorString(err)

@@ -1,6 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "ShaderProgram.h"
 #include <GL/glew.h>
 #include <string>
 #include <vector>
@@ -8,7 +9,7 @@
 class Model {
 public:
   Model(const std::string &filename);
-  void draw();
+  void draw(ShaderProgram &shaderProgram);
 
 private:
   struct Vertex {

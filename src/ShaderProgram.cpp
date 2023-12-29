@@ -19,6 +19,10 @@ GLuint ShaderProgram::loadShader(const std::string &filename,
                                  GLenum shaderType) {
   std::string code;
   std::ifstream shaderFile(filename);
+  if (!shaderFile) {
+    std::cerr << "Unable to open shader file: " << filename << std::endl;
+    return -1;
+  }
   std::stringstream shaderStream;
 
   // Read file's buffer contents into stream

@@ -24,8 +24,9 @@ public:
   void setUniform(const string &name, const vec3 &value);
   void setUniform(const string &name, const mat4 &value);
 
-private:
   GLuint programID;
+
+private:
   unordered_map<GLenum, GLuint> shaders;
 
   GLuint loadShader(const string &filename, GLenum shaderType);
