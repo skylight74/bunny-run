@@ -1,10 +1,19 @@
 #include "../include/ShaderProgram.h"
-#include <fstream>
-#include <iostream>
-#include <sstream>
 
 ShaderProgram::ShaderProgram() { programID = glCreateProgram(); }
 
+ShaderProgram::ShaderProgram(
+    const std::string &vertShaderFilename,
+    const std::string &fragShaderFilename,
+    std::vector<pair<GLuint, std::string>> attributes) {
+  programID = glCreateProgram();
+  attachShader(vertShaderFilename, GL_VERTEX_SHADER);
+  attachShader(fragShaderFilename, GL_FRAGMENT_SHADER);
+  for (auto &attribute : attributes) {
+    bindAttribute(attribute.first, attribute.second);
+  }
+  linkProgram();
+}
 ShaderProgram::~ShaderProgram() {
   // Detach and delete shaders
   for (auto &shader : shaders) {
@@ -80,6 +89,7 @@ void ShaderProgram::useProgram() { glUseProgram(programID); }
 // Implementations of setUniform() methods ...
 
 void ShaderProgram::setUniform(const string &name, float value) {
+  useProgram();
   glUniform1f(glGetUniformLocation(programID, name.c_str()), value);
   // check for any openGL errors
   GLenum err;
@@ -89,6 +99,7 @@ void ShaderProgram::setUniform(const string &name, float value) {
   }
 }
 void ShaderProgram::setUniform(const string &name, int value) {
+  useProgram();
   glUniform1i(glGetUniformLocation(programID, name.c_str()), value);
   GLenum err;
   while ((err = glGetError()) != GL_NO_ERROR) {
@@ -97,6 +108,7 @@ void ShaderProgram::setUniform(const string &name, int value) {
   }
 }
 void ShaderProgram::setUniform(const string &name, const vec3 &value) {
+  useProgram();
   glUniform3fv(glGetUniformLocation(programID, name.c_str()), 1,
                value_ptr(value));
   GLenum err;

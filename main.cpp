@@ -20,7 +20,8 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 using namespace std;
-
+pair<GLuint, std::string> attribute0 = std::make_pair(0, "inVertex");
+pair<GLuint, std::string> attribute1 = std::make_pair(1, "inNormal");
 GLint gIntensityLoc;
 float gIntensity = 1000;
 int gWidth = 640, gHeight = 480;
@@ -64,8 +65,6 @@ void display(std::vector<Model *> &models,
   shaderPrograms[1]->setUniform("perspectiveMat", perspMat);
 
   models[1]->draw(*shaderPrograms[1]);
-  assert(glGetError() == GL_NO_ERROR);
-
   assert(glGetError() == GL_NO_ERROR);
 
   angle -= 0.5;
@@ -118,27 +117,21 @@ int main(int argc,
 
   glEnable(GL_DEPTH_TEST);
 
-  std::vector<ShaderProgram *> shaderPrograms;
-  shaderPrograms.push_back(new ShaderProgram());
-  shaderPrograms.push_back(new ShaderProgram());
-  shaderPrograms[0]->attachShader("./shaders/vert0.glsl", GL_VERTEX_SHADER);
-  shaderPrograms[0]->attachShader("./shaders/frag0.glsl", GL_FRAGMENT_SHADER);
-  shaderPrograms[1]->attachShader("./shaders/vert1.glsl", GL_VERTEX_SHADER);
-  shaderPrograms[1]->attachShader("./shaders/frag1.glsl", GL_FRAGMENT_SHADER);
+  std::vector<ShaderProgram *> shaderPrograms; // TODO make them unique_ptr
 
-  shaderPrograms[0]->bindAttribute(0, "inVertex");
-  shaderPrograms[0]->bindAttribute(1, "inNormal");
-  shaderPrograms[1]->bindAttribute(0, "inVertex");
-  shaderPrograms[1]->bindAttribute(1, "inNormal");
+  shaderPrograms.push_back(new ShaderProgram("./shaders/vert0.glsl",
+                                             "./shaders/frag0.glsl",
+                                             {attribute0, attribute1}));
 
-  shaderPrograms[0]->linkProgram();
-  shaderPrograms[1]->linkProgram();
-
+  shaderPrograms.push_back(new ShaderProgram("./shaders/vert1.glsl",
+                                             "./shaders/frag1.glsl",
+                                             {attribute0, attribute1}));
   shaderPrograms[0]->useProgram();
 
   gIntensityLoc = shaderPrograms[0]->getUniformLocation("intensity");
   cout << "gIntensityLoc = " << gIntensityLoc << endl;
   glUniform1f(gIntensityLoc, gIntensity);
+
   std::vector<Model *> models;
   models.push_back(
       new Model("/home/mohamed/ceng477/HW3_24/assets/models/cube.obj"));
