@@ -119,6 +119,7 @@ void Model::draw(ShaderProgram &shaderProgram) {
   // Ensure the shader program is bound before drawing
   // This should be the ID of your active shader program
 
+  shaderProgram.useProgram();
   // Bind the Vertex Array Object
   glBindVertexArray(vao);
   // Draw the model
@@ -129,9 +130,7 @@ void Model::draw(ShaderProgram &shaderProgram) {
   // Unbind the VAO to prevent accidental changes
   glBindVertexArray(0);
 
-  // Unbind the shader program
-  shaderProgram.useProgram();
-
+  // Optional: Check for any OpenGL errors
   GLenum err;
   while ((err = glGetError()) != GL_NO_ERROR) {
     std::cerr << "OpenGL error during drawing: " << gluErrorString(err)

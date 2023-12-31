@@ -50,10 +50,13 @@ GLuint ShaderProgram::loadShader(const std::string &filename,
 void ShaderProgram::attachShader(const std::string &filename,
                                  GLenum shaderType) {
   GLuint shader = loadShader(filename, shaderType);
-  glAttachShader(programID, shader);
-  shaders[shaderType] = shader;
+  if (shader != 0) {
+    glAttachShader(programID, shader);
+    shaders[shaderType] = shader;
+    std::cout << "Attached shader: " << filename << std::endl;
+    // glDeleteShader(shader); // Flag shader for deletion
+  }
 }
-
 void ShaderProgram::linkProgram() {
   glLinkProgram(programID);
 
@@ -68,21 +71,51 @@ void ShaderProgram::linkProgram() {
   }
 }
 
+void ShaderProgram::bindAttribute(GLuint location,
+                                  const std::string &attributeName) {
+  glBindAttribLocation(programID, location, attributeName.c_str());
+}
 void ShaderProgram::useProgram() { glUseProgram(programID); }
 
 // Implementations of setUniform() methods ...
 
 void ShaderProgram::setUniform(const string &name, float value) {
   glUniform1f(glGetUniformLocation(programID, name.c_str()), value);
+  // check for any openGL errors
+  GLenum err;
+  while ((err = glGetError()) != GL_NO_ERROR) {
+    std::cerr << "OpenGL error during setting uniform1f: " << name
+              << gluErrorString(err) << std::endl;
+  }
 }
 void ShaderProgram::setUniform(const string &name, int value) {
   glUniform1i(glGetUniformLocation(programID, name.c_str()), value);
+  GLenum err;
+  while ((err = glGetError()) != GL_NO_ERROR) {
+    std::cerr << "OpenGL error during setting uniform1i: " << name
+              << gluErrorString(err) << std::endl;
+  }
 }
 void ShaderProgram::setUniform(const string &name, const vec3 &value) {
   glUniform3fv(glGetUniformLocation(programID, name.c_str()), 1,
                value_ptr(value));
+  GLenum err;
+  while ((err = glGetError()) != GL_NO_ERROR) {
+    std::cerr << "OpenGL error during setting uniform3fv: " << name
+              << gluErrorString(err) << std::endl;
+  }
 }
 void ShaderProgram::setUniform(const string &name, const mat4 &value) {
+  useProgram();
   glUniformMatrix4fv(glGetUniformLocation(programID, name.c_str()), 1, GL_FALSE,
                      value_ptr(value));
+  GLenum err;
+  while ((err = glGetError()) != GL_NO_ERROR) {
+    std::cerr << "OpenGL error during setting uniformMx4fv: " << name
+              << gluErrorString(err) << std::endl;
+  }
+}
+
+GLuint ShaderProgram::getUniformLocation(const string &name) {
+  return glGetUniformLocation(programID, name.c_str());
 }
