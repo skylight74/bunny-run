@@ -1,0 +1,3 @@
+ # ignore all the .o files in the direcotries and sub direcotries
+*.o
+*/*.o
