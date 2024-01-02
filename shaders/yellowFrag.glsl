@@ -1,13 +1,13 @@
 #version 120
 
-vec3 lightPos = vec3(5, 5, 5);
-vec3 eyePos = vec3(0, 0, 0);
+vec3 lightPos = vec3(0, 0, 0);
+vec3 eyePos = vec3(-5, -5, -5);
 
 vec3 I = vec3(2, 2, 2);
 vec3 Iamb = vec3(0.8, 0.8, 0.8);
 
-vec3 kd = vec3(0.2, 0, 0.7);
-vec3 ka = vec3(0.1, 0.1, 0.1);
+vec3 kd = vec3(0.2f, 0.6f, 0.f);
+vec3 ka = vec3(0.8f, 0.2, 0.0);
 vec3 ks = vec3(0.8, 0.8, 0.8);
 
 varying vec4 fragPos;

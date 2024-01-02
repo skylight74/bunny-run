@@ -1,3 +1,4 @@
+#include "include/Camera.h"
 #include "include/Model.h"
 #include "include/ShaderProgram.h"
 #include <GL/gl.h>      // The GL Header File
@@ -26,50 +27,6 @@ GLint gIntensityLoc;
 float gIntensity = 1000;
 int gWidth = 640, gHeight = 480;
 
-// this function would take avextor array of models and draw them according to
-// the shader program vector array
-void display(std::vector<Model *> &models,
-             std::vector<ShaderProgram *> &shaderPrograms) {
-  glClearColor(0, 0, 0, 1);
-  glClearDepth(1.0f);
-  glClearStencil(0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-  static float angle = 0;
-
-  // glLoadIdentity();
-  // glTranslatef(-2, 0, -10);
-  // glRotatef(angle, 0, 1, 0);
-  glm::mat4 T = glm::translate(glm::mat4(1.f), glm::vec3(-2.f, 0.f, -10.f));
-  glm::mat4 R =
-      glm::rotate(glm::mat4(1.f), glm::radians(angle), glm::vec3(0, 1, 0));
-  glm::mat4 modelMat = T * R;
-  glm::mat4 modelMatInv = glm::transpose(glm::inverse(modelMat));
-  glm::mat4 perspMat = glm::perspective(glm::radians(45.0f), 1.f, 1.0f, 100.0f);
-
-  shaderPrograms[0]->setUniform("modelingMat", modelMat);
-  shaderPrograms[0]->setUniform("modelingMatInvTr", modelMatInv);
-  shaderPrograms[0]->setUniform("perspectiveMat", perspMat);
-
-  models[0]->draw(*shaderPrograms[0]);
-  // glLoadIdentity();
-  // glTranslatef(2, 0, -10);
-  // glRotatef(-angle, 0, 1, 0);
-  T = glm::translate(glm::mat4(1.f), glm::vec3(2.f, 0.f, -10.f));
-  R = glm::rotate(glm::mat4(1.f), glm::radians(-angle), glm::vec3(0, 1, 0));
-  modelMat = T * R;
-  modelMatInv = glm::transpose(glm::inverse(modelMat));
-  //
-  shaderPrograms[1]->setUniform("modelingMat", modelMat);
-  shaderPrograms[1]->setUniform("modelingMatInvTr", modelMatInv);
-  shaderPrograms[1]->setUniform("perspectiveMat", perspMat);
-
-  models[1]->draw(*shaderPrograms[1]);
-  assert(glGetError() == GL_NO_ERROR);
-
-  angle -= 0.5;
-}
-
 void reshape(GLFWwindow *window, int w, int h) {
   w = w < 1 ? 1 : w;
   h = h < 1 ? 1 : h;
@@ -78,6 +35,58 @@ void reshape(GLFWwindow *window, int w, int h) {
   gHeight = h;
 
   glViewport(0, 0, w, h);
+}
+// this function would take avextor array of models and draw them according to
+// the shader program vector array
+void display(std::vector<Model *> &models,
+             std::vector<ShaderProgram *> &shaderPrograms, Camera &camera) {
+  glClearColor(0.5, 0.5, 0.5, 1);
+  glClearDepth(1.0f);
+  glClearStencil(0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+  static float bunnyAngle = 280;
+  static float bunnyYpos = -2.f;
+  static float cubeAngle = 0;
+  static float far = -15.f;
+  static int yellowcube_index = 2;
+  // glLoadIdentity();
+  // glTranslatef(-2, 0, -10);
+  // glRotatef(angle, 0, 1, 0);
+  glm::mat4 perspMat = camera.getProjectionMatrix();
+
+  models[0]->draw(*shaderPrograms[0], bunnyAngle, vec3(0.f, bunnyYpos, -5.5f),
+                  vec3(1.f, 1.f, 1.f), perspMat);
+  // glLoadIdentity();
+  // glTranslatef(2, 0, -10);
+  // glRotatef(-angle, 0, 1, 0);
+  for (int i = 1; i < 4; i++) {
+    if (i == yellowcube_index) {
+      if (i == 1)
+        models[i]->draw(*shaderPrograms[0], cubeAngle, vec3(-3.f, -1.f, far),
+                        vec3(.55f, 1.f, 1.f), perspMat);
+      else
+        models[i]->draw(*shaderPrograms[0], cubeAngle,
+                        vec3(i % 2 * 3.f, -1.f, far), vec3(.55f, 1.f, 1.f),
+                        perspMat);
+    } else {
+      if (i == 1)
+        models[i]->draw(*shaderPrograms[1], cubeAngle, vec3(-3.f, -1.f, far),
+                        vec3(.55f, 1.f, 1.f), perspMat);
+      else
+        models[i]->draw(*shaderPrograms[1], cubeAngle,
+                        vec3(i % 2 * 3.f, -1.f, far), vec3(.55f, 1.f, 1.f),
+                        perspMat);
+    }
+  }
+  assert(glGetError() == GL_NO_ERROR);
+  if (far > -5.5f) {
+    far = -15.f;
+    yellowcube_index = (rand() % 3) + 1;
+  }
+  far += 0.07f;
+  // bunny moves up and down on the y axis in a sin wave
+  bunnyYpos = 0.5 * sin(glfwGetTime() * 10) - 2.f;
 }
 
 int main(int argc,
@@ -117,14 +126,15 @@ int main(int argc,
 
   glEnable(GL_DEPTH_TEST);
 
+  Camera camera;
   std::vector<ShaderProgram *> shaderPrograms; // TODO make them unique_ptr
 
-  shaderPrograms.push_back(new ShaderProgram("./shaders/vert0.glsl",
-                                             "./shaders/frag0.glsl",
+  shaderPrograms.push_back(new ShaderProgram("./shaders/vert1.glsl",
+                                             "./shaders/yellowFrag.glsl",
                                              {attribute0, attribute1}));
 
-  shaderPrograms.push_back(new ShaderProgram("./shaders/vert1.glsl",
-                                             "./shaders/frag1.glsl",
+  shaderPrograms.push_back(new ShaderProgram("./shaders/vert0.glsl",
+                                             "./shaders/redFrag.glsl",
                                              {attribute0, attribute1}));
   shaderPrograms[0]->useProgram();
 
@@ -134,16 +144,22 @@ int main(int argc,
 
   std::vector<Model *> models;
   models.push_back(
-      new Model("/home/mohamed/ceng477/HW3_24/assets/models/cube.obj"));
-  models.push_back(
       new Model("/home/mohamed/ceng477/HW3_24/assets/models/bunny.obj"));
+
+  models.push_back(
+      new Model("/home/mohamed/ceng477/HW3_24/assets/models/cube.obj"));
+
+  // the next three models are the same cube so we can use the model and just
+  // have pointers to it
+  models.push_back(models[1]);
+  models.push_back(models[1]);
 
   glfwSetWindowSizeCallback(window, reshape);
 
   reshape(window, gWidth, gHeight); // need to call this once ourselves
 
   while (!glfwWindowShouldClose(window)) {
-    display(models, shaderPrograms);
+    display(models, shaderPrograms, camera);
     glfwSwapBuffers(window);
     glfwPollEvents();
   }

@@ -18,6 +18,9 @@ uniform mat4 perspectiveMat;
 attribute vec3 inVertex;
 attribute vec3 inNormal;
 
+varying vec4 fragPos;
+varying vec3 N;
+
 void main(void)
 {
 	vec4 p = modelingMat * vec4(inVertex, 1); // translate to world coordinates
@@ -25,7 +28,7 @@ void main(void)
 	vec3 L = normalize(Lorg);
 	vec3 V = normalize(eyePos - vec3(p));
 	vec3 H = normalize(L + V);
-	vec3 N = vec3(modelingMatInvTr * vec4(inNormal, 0)); // provided by the programmer
+	N = vec3(modelingMatInvTr * vec4(inNormal, 0)); // provided by the programmer
 	N = normalize(N);
 	float NdotL = dot(N, L);
 	float NdotH = dot(N, H);
@@ -34,7 +37,7 @@ void main(void)
 	vec3 diffuseColor = I * kd * max(0, NdotL) / (d * d);
 	vec3 ambientColor = Iamb * ka;
 	vec3 specularColor = I * ks * pow(max(0, NdotH), 20) / (d * d);
-
+	fragPos = p;
 	gl_FrontColor = vec4(diffuseColor + ambientColor + specularColor, 1);
 
     gl_Position = perspectiveMat * modelingMat * vec4(inVertex, 1);

@@ -1,6 +1,7 @@
 #include "../include/Model.h"
 #include <cassert>
 #include <fstream>
+#include <glm/fwd.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -115,11 +116,21 @@ void Model::setupBuffers() {
 
   glBindVertexArray(0);
 }
-void Model::draw(ShaderProgram &shaderProgram) {
+void Model::draw(ShaderProgram &shaderProgram, float angle, vec3 position,
+                 vec3 scale, mat4 projectionMat) {
   // Ensure the shader program is bound before drawing
   // This should be the ID of your active shader program
+  mat4 translationMatrix = translate(mat4(10.f), position);
+  mat4 rotationMatrix =
+      glm::rotate(mat4(1.f), glm::radians(angle), vec3(0, 1, 0));
+  mat4 scaleMatrix = glm::scale(mat4(1.f), scale);
+  mat4 modelMat = translationMatrix * rotationMatrix * scaleMatrix;
 
   shaderProgram.useProgram();
+  shaderProgram.setUniform("modelingMat", modelMat);
+  shaderProgram.setUniform("modelingMatInvTr",
+                           glm::transpose(glm::inverse(modelMat)));
+  shaderProgram.setUniform("perspectiveMat", projectionMat);
   // Bind the Vertex Array Object
   glBindVertexArray(vao);
   // Draw the model
@@ -137,3 +148,7 @@ void Model::draw(ShaderProgram &shaderProgram) {
               << std::endl;
   }
 }
+
+void Model::setPosition(const glm::vec3 &pos) { position = pos; }
+
+vec3 Model::getPosition() const { return position; }

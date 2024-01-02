@@ -9,9 +9,12 @@
 class Model {
 public:
   Model(const std::string &filename);
-  void draw(ShaderProgram &shaderProgram);
+  void draw(ShaderProgram &shaderProgram, float, vec3, vec3, mat4);
+  void setPosition(const glm::vec3 &newPosition);
+  glm::vec3 getPosition() const;
 
 private:
+  glm::vec3 position;
   struct Vertex {
     GLfloat x, y, z;
     Vertex(GLfloat x, GLfloat y, GLfloat z) : x(x), y(y), z(z) {}
