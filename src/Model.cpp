@@ -116,13 +116,20 @@ void Model::setupBuffers() {
 
   glBindVertexArray(0);
 }
-void Model::draw(ShaderProgram &shaderProgram, float angle, vec3 position,
-                 vec3 scale, mat4 projectionMat) {
+void Model::draw(ShaderProgram &shaderProgram, float angle, Axis rotationAxis,
+                 vec3 position, vec3 scale, Camera &camera) {
   // Ensure the shader program is bound before drawing
   // This should be the ID of your active shader program
   mat4 translationMatrix = translate(mat4(10.f), position);
+  vec3 rotationVector = vec3(0, 0, 0);
+  if (rotationAxis == X)
+    rotationVector.x = 1;
+  else if (rotationAxis == Y)
+    rotationVector.y = 1;
+  else
+    rotationVector.z = 1;
   mat4 rotationMatrix =
-      glm::rotate(mat4(1.f), glm::radians(angle), vec3(0, 1, 0));
+      glm::rotate(mat4(1.f), glm::radians(angle), rotationVector);
   mat4 scaleMatrix = glm::scale(mat4(1.f), scale);
   mat4 modelMat = translationMatrix * rotationMatrix * scaleMatrix;
 
@@ -130,7 +137,8 @@ void Model::draw(ShaderProgram &shaderProgram, float angle, vec3 position,
   shaderProgram.setUniform("modelingMat", modelMat);
   shaderProgram.setUniform("modelingMatInvTr",
                            glm::transpose(glm::inverse(modelMat)));
-  shaderProgram.setUniform("perspectiveMat", projectionMat);
+  shaderProgram.setUniform("perspectiveMat", camera.getProjectionMatrix());
+  shaderProgram.setUniform("viewingMat", camera.getViewMatrix());
   // Bind the Vertex Array Object
   glBindVertexArray(vao);
   // Draw the model

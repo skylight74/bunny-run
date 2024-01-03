@@ -18,15 +18,17 @@
 
 #include FT_FREETYPE_H
 
-#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+#define SPEED .07f
+#define STARTING_POSITION -75.f
+#define BUNNY_JUMP_PLANE -4.4f
 
 using namespace std;
-pair<GLuint, std::string> attribute0 = std::make_pair(0, "inVertex");
-pair<GLuint, std::string> attribute1 = std::make_pair(1, "inNormal");
+pair<GLuint, std::string> inVertex_attribute = std::make_pair(0, "inVertex");
+pair<GLuint, std::string> inNormal_attribute = std::make_pair(1, "inNormal");
 GLint gIntensityLoc;
 float gIntensity = 1000;
 int gWidth = 640, gHeight = 480;
-
+int rounds = 1;
 void reshape(GLFWwindow *window, int w, int h) {
   w = w < 1 ? 1 : w;
   h = h < 1 ? 1 : h;
@@ -46,47 +48,61 @@ void display(std::vector<Model *> &models,
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   static float bunnyAngle = 280;
-  static float bunnyYpos = -2.f;
+  static float bunnyYpos = BUNNY_JUMP_PLANE;
   static float cubeAngle = 0;
-  static float far = -15.f;
+  static float cuberFardistance = STARTING_POSITION;
   static int yellowcube_index = 2;
+  static float groundDistance = STARTING_POSITION;
   // glLoadIdentity();
   // glTranslatef(-2, 0, -10);
   // glRotatef(angle, 0, 1, 0);
-  glm::mat4 perspMat = camera.getProjectionMatrix();
 
-  models[0]->draw(*shaderPrograms[0], bunnyAngle, vec3(0.f, bunnyYpos, -5.5f),
-                  vec3(1.f, 1.f, 1.f), perspMat);
+  models[0]->draw(*shaderPrograms[0], bunnyAngle, Y,
+                  vec3(0.f, bunnyYpos, -9.5f), vec3(0.5f, 0.5f, 0.5f), camera);
   // glLoadIdentity();
   // glTranslatef(2, 0, -10);
   // glRotatef(-angle, 0, 1, 0);
   for (int i = 1; i < 4; i++) {
     if (i == yellowcube_index) {
       if (i == 1)
-        models[i]->draw(*shaderPrograms[0], cubeAngle, vec3(-3.f, -1.f, far),
-                        vec3(.55f, 1.f, 1.f), perspMat);
+        models[i]->draw(*shaderPrograms[3], cubeAngle, Y,
+                        vec3(-3.f, -4.f, cuberFardistance),
+                        vec3(.55f, 1.f, 1.f), camera);
       else
-        models[i]->draw(*shaderPrograms[0], cubeAngle,
-                        vec3(i % 2 * 3.f, -1.f, far), vec3(.55f, 1.f, 1.f),
-                        perspMat);
+        models[i]->draw(*shaderPrograms[3], cubeAngle, Y,
+                        vec3(i % 2 * 3.f, -4.f, cuberFardistance),
+                        vec3(.55f, 1.f, 1.f), camera);
     } else {
       if (i == 1)
-        models[i]->draw(*shaderPrograms[1], cubeAngle, vec3(-3.f, -1.f, far),
-                        vec3(.55f, 1.f, 1.f), perspMat);
+        models[i]->draw(*shaderPrograms[1], cubeAngle, Y,
+                        vec3(-3.f, -4.f, cuberFardistance),
+                        vec3(.55f, 1.f, 1.f), camera);
       else
-        models[i]->draw(*shaderPrograms[1], cubeAngle,
-                        vec3(i % 2 * 3.f, -1.f, far), vec3(.55f, 1.f, 1.f),
-                        perspMat);
+        models[i]->draw(*shaderPrograms[1], cubeAngle, Y,
+                        vec3(i % 2 * 3.f, -4.f, cuberFardistance),
+                        vec3(.55f, 1.f, 1.f), camera);
     }
   }
+  shaderPrograms[2]->setUniform("groundMovement", groundDistance);
+  models[4]->draw(*shaderPrograms[2], 90, X, vec3(0.f, 5.f, groundDistance),
+                  vec3(3.75f, -STARTING_POSITION, 1.f), camera);
+  models[4]->draw(*shaderPrograms[2], 90, X,
+                  vec3(0.f, 5.f, groundDistance - STARTING_POSITION),
+                  vec3(3.75f, -STARTING_POSITION, 5.f), camera);
+  models[4]->draw(*shaderPrograms[2], 90, X,
+                  vec3(0.f, 5.f, groundDistance + STARTING_POSITION),
+                  vec3(3.75f, -STARTING_POSITION, 5.f), camera);
   assert(glGetError() == GL_NO_ERROR);
-  if (far > -5.5f) {
-    far = -15.f;
+  if (cuberFardistance > -5.f) {
+    cuberFardistance = STARTING_POSITION;
+    groundDistance = STARTING_POSITION;
     yellowcube_index = (rand() % 3) + 1;
+    rounds++;
   }
-  far += 0.07f;
+  cuberFardistance += SPEED * rounds;
+  groundDistance += SPEED * rounds;
   // bunny moves up and down on the y axis in a sin wave
-  bunnyYpos = 0.5 * sin(glfwGetTime() * 10) - 2.f;
+  bunnyYpos = 0.5 * sin(glfwGetTime() * 25 * SPEED * rounds) + BUNNY_JUMP_PLANE;
 }
 
 int main(int argc,
@@ -102,7 +118,7 @@ int main(int argc,
   // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
   // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-  window = glfwCreateWindow(gWidth, gHeight, "Simple Example", NULL, NULL);
+  window = glfwCreateWindow(gWidth, gHeight, "Bunny Run", NULL, NULL);
 
   if (!window) {
     glfwTerminate();
@@ -129,13 +145,20 @@ int main(int argc,
   Camera camera;
   std::vector<ShaderProgram *> shaderPrograms; // TODO make them unique_ptr
 
-  shaderPrograms.push_back(new ShaderProgram("./shaders/vert1.glsl",
-                                             "./shaders/yellowFrag.glsl",
-                                             {attribute0, attribute1}));
+  shaderPrograms.push_back(
+      new ShaderProgram("./shaders/vert0.glsl", "./shaders/frag0.glsl",
+                        {inVertex_attribute, inNormal_attribute}));
 
-  shaderPrograms.push_back(new ShaderProgram("./shaders/vert0.glsl",
-                                             "./shaders/redFrag.glsl",
-                                             {attribute0, attribute1}));
+  shaderPrograms.push_back(
+      new ShaderProgram("./shaders/vert1.glsl", "./shaders/frag1.glsl",
+                        {inVertex_attribute, inNormal_attribute}));
+  shaderPrograms.push_back(new ShaderProgram(
+      "./shaders/quadVertexShader.glsl", "./shaders/quadFragmentShader.glsl",
+      {inVertex_attribute}));
+  shaderPrograms.push_back(
+      new ShaderProgram("./shaders/yellowCubeVertexShader.glsl",
+                        "./shaders/yellowCubeFragmentShader.glsl",
+                        {inVertex_attribute, inNormal_attribute}));
   shaderPrograms[0]->useProgram();
 
   gIntensityLoc = shaderPrograms[0]->getUniformLocation("intensity");
@@ -153,6 +176,10 @@ int main(int argc,
   // have pointers to it
   models.push_back(models[1]);
   models.push_back(models[1]);
+  models.push_back(
+      new Model("/home/mohamed/ceng477/HW3_24/assets/models/quad.obj"));
+  models.push_back(models[4]);
+  models.push_back(models[4]);
 
   glfwSetWindowSizeCallback(window, reshape);
 

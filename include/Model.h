@@ -1,15 +1,20 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "Camera.h"
 #include "ShaderProgram.h"
 #include <GL/glew.h>
 #include <string>
 #include <vector>
 
+// define a type that is an enum for x,y,z axices
+typedef enum { X, Y, Z } Axis;
+
 class Model {
 public:
   Model(const std::string &filename);
-  void draw(ShaderProgram &shaderProgram, float, vec3, vec3, mat4);
+  void draw(ShaderProgram &shaderProgram, float, Axis, vec3, vec3,
+            Camera &camera);
   void setPosition(const glm::vec3 &newPosition);
   glm::vec3 getPosition() const;
 

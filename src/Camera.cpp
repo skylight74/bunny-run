@@ -39,3 +39,4 @@ void Camera::updatePosition(const glm::vec3 &positionDelta) {
   // Update the view matrix
   calculateViewMatrix();
 }
+glm::vec3 Camera::getPosition() const { return position; }

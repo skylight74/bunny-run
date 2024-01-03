@@ -10,7 +10,7 @@ public:
 
   // Update the camera's position based on the bunny's position
   void updatePosition(const glm::vec3 &bunnyPosition);
-
+  glm::vec3 getPosition() const;
   // Get the view matrix for rendering
   glm::mat4 getViewMatrix() const;
 
