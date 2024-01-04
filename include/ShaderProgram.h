@@ -31,6 +31,7 @@ public:
   void setUniform(const string &name, const mat4 &value);
   void bindAttribute(GLuint location, const std::string &attributeName);
   GLuint getUniformLocation(const string &name);
+  GLuint getProgramID() { return programID; }
 
 private:
   GLuint programID;
