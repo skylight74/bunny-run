@@ -219,13 +219,11 @@ void GameLogic::handleKeyPress(int key, int action) {
       glfwSetWindowShouldClose(window, GLFW_TRUE);
       break;
     case GLFW_KEY_A:
-      std::cout << "left" << std::endl;
       if (bunny->position->x > -3.f && !bunny->isDead) {
         bunny->position->x -= 0.5f;
       }
       break;
     case GLFW_KEY_D:
-      std::cout << "right" << std::endl;
       if (bunny->position->x < 3.f && !bunny->isDead) {
         bunny->position->x += 0.5f;
       }
