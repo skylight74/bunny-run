@@ -9,7 +9,7 @@ Camera::Camera() {
 
   // Initialize FOV, aspect ratio, and clipping planes
   fov = 60.0f;               // Field of view
-  aspectRatio = 3.0f / 4.0f; // Default aspect ratio
+  aspectRatio = 4.0f / 3.0f; // Default aspect ratio
   nearPlane = 0.1f;          // Near clipping plane
   farPlane = 100.0f;         // Far clipping plane
 

@@ -91,8 +91,8 @@ void GameLogic::Render() {
   // glRotatef(-angle, 0, 1, 0);
   for (int i = 0; i < 3; i++) {
     if (i == yellowCubeIndex) {
-      if (bunny->position->x < cubes[i]->position->x + 0.5f &&
-          bunny->position->x > cubes[i]->position->x - 0.5f &&
+      if (bunny->position->x < cubes[i]->position->x + 1.f &&
+          bunny->position->x > cubes[i]->position->x - 1.f &&
           cubes[i]->position->z > bunny->position->z - 0.7f) {
         // Don't render the yellow cube if the bunny is on it
       } else {
@@ -133,8 +133,8 @@ void GameLogic::Update() {
     if (!cube->isYellow) {
       if (cube->position->z < bunny->position->z + 0.7f &&
           cube->position->z > bunny->position->z - 0.7f) {
-        if (bunny->position->x < cube->position->x + 0.5f &&
-            bunny->position->x > cube->position->x - 0.5f) {
+        if (bunny->position->x < cube->position->x + 1.f &&
+            bunny->position->x > cube->position->x - 1.f) {
           bunny->isDead = true;
         }
       }
@@ -173,8 +173,8 @@ void GameLogic::updateBunnyPosition() {
     // if (true) {
     bunny->position->y =
         0.5 * sin(glfwGetTime() * 20 * speedDelta) + bunnyJumpPlane;
-    if (bunny->position->x < cubes[yellowCubeIndex]->position->x + 0.5f &&
-        bunny->position->x > cubes[yellowCubeIndex]->position->x - 0.5f) {
+    if (bunny->position->x < cubes[yellowCubeIndex]->position->x + 1.f &&
+        bunny->position->x > cubes[yellowCubeIndex]->position->x - 1.f) {
       if (bunny->position->z < cubes[yellowCubeIndex]->position->z + 0.7f &&
           bunny->position->z > cubes[yellowCubeIndex]->position->z - 0.7f) {
         bunny->angle += 5;
