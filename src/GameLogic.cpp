@@ -51,13 +51,11 @@ void GameLogic::Initialize() {
   shaderPrograms[0]->useProgram();
   glUniform1f(shaderPrograms[0]->getUniformLocation("intensity"), 1000.0);
 
-  bunny = new Bunny(
-      new vec3(0.f, bunnyJumpPlane, -9.5f), 280,
-      new Model("/home/mohamed/ceng477/HW3_24/assets/models/bunny.obj"));
+  bunny = new Bunny(new vec3(0.f, bunnyJumpPlane, -9.5f), 280,
+                    new Model("assets/models/bunny.obj"));
   // the next three models are the same cube so we can use the model and just
-  cubes.push_back(new Cube(
-      new vec3(-3.f, -4.f, startingPostion),
-      new Model("/home/mohamed/ceng477/HW3_24/assets/models/cube.obj")));
+  cubes.push_back(new Cube(new vec3(-3.f, -4.f, startingPostion),
+                           new Model("assets/models/cube.obj")));
   cubes.push_back(
       new Cube(new vec3(3.f, -4.f, startingPostion), cubes[0]->model));
   cubes.push_back(
@@ -66,14 +64,12 @@ void GameLogic::Initialize() {
   // have pointers to it
   // models.push_back(models[1]);
   // models.push_back(models[1]);
-  ground.push_back(
-      new Model("/home/mohamed/ceng477/HW3_24/assets/models/quad.obj"));
+  ground.push_back(new Model("assets/models/quad.obj"));
   ground.push_back(ground[0]);
   ground.push_back(ground[0]);
   // TODO enable those before submission
   textRender = new TextRender(width, height, *shaderPrograms[4]);
-  textRender->Load("/usr/share/fonts/liberation/LiberationSerif-Italic.ttf",
-                   48);
+  textRender->Load("assets/fonts/LiberationSerif-Italic.ttf", 48);
   // T1xture("../assets/textures/sky.jpg", 0);
 }
 // this function would take avextor array of models and draw them according to

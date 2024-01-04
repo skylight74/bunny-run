@@ -6,7 +6,7 @@ INCLUDE = -I./include
 # Define your source files and target executable
 SRC = $(wildcard src/*.cpp) main.cpp
 OBJ = $(SRC:.cpp=.o)
-EXEC = run_bunny_run
+EXEC = bunny_run
 
 all: $(EXEC)
 
