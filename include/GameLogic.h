@@ -19,6 +19,11 @@ struct Cube {
     isYellow = false;
   }
 };
+struct HitBox {
+  float width;
+  float depth;
+  HitBox(float width, float depth) : width(width), depth(depth) {}
+};
 // define a struct for the bunny that has the position and the model related to
 // it but it would save it as a pointer to the position and angle.
 struct Bunny {
@@ -71,6 +76,7 @@ private:
   const float cubeAngle = 0;
   // Other properties as needed for game state
   int yellowCubeIndex;
+  HitBox *bunnyHitBox;
   float groundDistance;
   // Game logic states
 

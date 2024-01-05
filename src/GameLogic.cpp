@@ -9,6 +9,7 @@ GameLogic::GameLogic(int width, int height, GLFWwindow *window) {
   this->instance = this;
   inVertex_attribute = make_pair(0, "inVertex");
   inNormal_attribute = make_pair(1, "inNormal");
+  this->bunnyHitBox = new HitBox(0.5f, 1.f);
 }
 GameLogic::~GameLogic() {
   // Delete all models
@@ -90,19 +91,21 @@ void GameLogic::Render() {
   // glTranslatef(2, 0, -10);
   // glRotatef(-angle, 0, 1, 0);
   for (int i = 0; i < 3; i++) {
-    if (i == yellowCubeIndex) {
-      if (bunny->position->x < cubes[i]->position->x + 1.f &&
-          bunny->position->x > cubes[i]->position->x - 1.f &&
-          cubes[i]->position->z > bunny->position->z - 0.7f) {
-        // Don't render the yellow cube if the bunny is on it
-      } else {
+    if (bunny->position->x < cubes[i]->position->x + 1.f &&
+        bunny->position->x > cubes[i]->position->x - 1.f &&
+        cubes[i]->position->z > bunny->position->z - bunnyHitBox->width) {
+      // Don't render the yellow cube if the bunny is on it
+    } else {
+      if (i == yellowCubeIndex) {
         cubes[i]->model->draw(*shaderPrograms[3], cubeAngle, Y,
                               *cubes[i]->position, vec3(0.55f, 1.f, 1.f),
                               camera);
+      } else {
+
+        cubes[i]->model->draw(*shaderPrograms[1], cubeAngle, Y,
+                              *cubes[i]->position, vec3(0.55f, 1.f, 1.f),
+                              camera);
       }
-    } else {
-      cubes[i]->model->draw(*shaderPrograms[1], cubeAngle, Y,
-                            *cubes[i]->position, vec3(0.55f, 1.f, 1.f), camera);
     }
   }
   shaderPrograms[2]->setUniform("groundMovement", groundDistance);
@@ -120,19 +123,22 @@ void GameLogic::Render() {
                            400.0f, 1.0f, glm::vec3(0.8, 0.2f, 0.2f));
   } else {
     textRender->RenderText("Score: " + to_string(score), 25.0f, 440.0f, 1.0f,
-                           glm::vec3(0.5, 0.8f, 0.2f));
+                           glm::vec3(0.7, 0.7f, 0.2f));
   }
 
   assert(glGetError() == GL_NO_ERROR);
 }
 
 void GameLogic::Update() {
-  score += (int)(glfwGetTime() * rounds);
+  if (rounds == 1) {
+    score += (int)(glfwGetTime() * speedDelta * 5);
+  }
+  score += (int)(glfwGetTime() * speed);
   updateBunnyPosition();
   for (auto &cube : cubes) {
     if (!cube->isYellow) {
-      if (cube->position->z < bunny->position->z + 0.7f &&
-          cube->position->z > bunny->position->z - 0.7f) {
+      if (cube->position->z < bunny->position->z + bunnyHitBox->width &&
+          cube->position->z > bunny->position->z - bunnyHitBox->width) {
         if (bunny->position->x < cube->position->x + 1.f &&
             bunny->position->x > cube->position->x - 1.f) {
           bunny->isDead = true;
@@ -148,14 +154,23 @@ void GameLogic::Update() {
     cubes[yellowCubeIndex]->isYellow = false;
     yellowCubeIndex = (rand() % 3);
     cubes[yellowCubeIndex]->isYellow = true;
-    rounds++;
+    if (!bunny->isDead) {
+      rounds++;
+      score += 1000;
+    }
     // speedDelta would decrease by a factor such that the postion updating
     // wouln't exceed 0.5f so that the bunny would have enough time to jump
     // between cube so a logaritmic function would be used
-    speed += startingSpeed * log(rounds + 1.0f) / log(pow(1000, rounds));
-    if (speed > 0.8f) {
-      speed = 0.8f;
+    speed += startingSpeed * log(rounds + 1.0f) / log(pow(10, rounds));
+    // if (speed > 0.8f) {
+    //   speed = 0.8f;
+    // }
+    if (speedDelta > bunnyHitBox->width) {
+      bunnyHitBox->width += 0.1f;
+      // cout << "changed hit box size by 0.1" << endl;
     }
+    // cout << "speed: " << speed << endl;
+    // cout << "hit box size: " << bunnyHitBox->width << endl;
   }
   if (speedDelta < speed) {
     speedDelta += (speed - speedDelta) / 100;
@@ -175,19 +190,21 @@ void GameLogic::updateBunnyPosition() {
         0.5 * sin(glfwGetTime() * 20 * speedDelta) + bunnyJumpPlane;
     if (bunny->position->x < cubes[yellowCubeIndex]->position->x + 1.f &&
         bunny->position->x > cubes[yellowCubeIndex]->position->x - 1.f) {
-      if (bunny->position->z < cubes[yellowCubeIndex]->position->z + 0.7f &&
-          bunny->position->z > cubes[yellowCubeIndex]->position->z - 0.7f) {
-        bunny->angle += 5;
+      if (bunny->position->z <
+              cubes[yellowCubeIndex]->position->z + bunnyHitBox->width &&
+          bunny->position->z >
+              cubes[yellowCubeIndex]->position->z - bunnyHitBox->width) {
+        bunny->angle += 20;
         bunny->axis = Y;
         return;
       }
     } else {
       if (bunny->angle % 360 != 280)
-        bunny->angle += 5;
+        bunny->angle += 20;
       return;
     }
     if (bunny->angle % 360 != 280)
-      bunny->angle += 5;
+      bunny->angle += 20;
     bunny->axis = Y;
     // score += (int)(glfwGetTime() * speedDelta * rounds);
     return;
@@ -270,4 +287,7 @@ void GameLogic::resetGame() {
   score = 0;
   speed = startingSpeed;
   speedDelta = startingSpeed;
+  // reset the gltime
+  glfwSetTime(0);
+  bunnyHitBox->width = 0.5f;
 }
